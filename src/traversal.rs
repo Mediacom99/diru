@@ -54,37 +54,37 @@ pub fn calculate_usage(path: &Path, cli_args: &Args) -> Result<Vec<DiskUsage>> {
             continue;
         }
 
-        let file_size = if cli_args.logical {
-            metadata.len()
-        } else {
-            metadata.blocks() * 512
-        };
+            let file_size = if cli_args.logical {
+                metadata.len()
+            } else {
+                metadata.blocks() * 512
+            };
 
-        if cli_args.all && entry.depth() <= cli_args.max_depth {
-            results.push(DiskUsage {
-                path: entry.path().to_path_buf(),
-                size: file_size,
-                is_dir: false,
-            });
-        }
-
-        // For each file, add its size to ALL parent directories.
-        // This gives us the total size for each directory in one pass.
-        let mut current_path = entry.path();
-        loop {
-            *dir_sizes.entry(current_path.to_path_buf()).or_insert(0) += file_size;
-            match current_path.parent() {
-                Some(parent) => {
-                    *dir_sizes.entry(parent.to_path_buf()).or_insert(0) += file_size;
-                    if parent == path {
-                        break;
-                    }
-                    current_path = parent;
-                }
-                None => break,
+            if cli_args.all && entry.depth() <= cli_args.max_depth {
+                results.push(DiskUsage {
+                    path: entry.path().to_path_buf(),
+                    size: file_size,
+                    is_dir: false,
+                });
             }
-        }
-    }
+
+            // For each file, add its size to ALL parent directories.
+            // This gives us the total size for each directory in one pass.
+            let mut current_path = entry.path();
+            loop {
+                *dir_sizes.entry(current_path.to_path_buf()).or_insert(0) += file_size;
+                match current_path.parent() {
+                    Some(parent) => {
+                        *dir_sizes.entry(parent.to_path_buf()).or_insert(0) += file_size;
+                        if parent == path {
+                            break;
+                        }
+                        current_path = parent;
+                    }
+                    None => break,
+                }
+            }
+        });
 
     // Show only directories up to max depth
     if !cli_args.summarize || cli_args.all {

@@ -10,9 +10,9 @@ fn main() -> Result<()> {
             println!("{}", total.format(args.format));
         }
     } else {
-        for usage in usage_info {
+        usage_info.iter().for_each(|usage| {
             println!("{}", usage.format(args.format));
-        }
+        });
     }
 
     Ok(())
